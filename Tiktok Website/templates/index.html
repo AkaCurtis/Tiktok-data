@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTok Data Analyzer</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>TikTok Data Analyzer</h1>
+        <form method="POST" enctype="multipart/form-data">
+            <label for="file">Upload your TikTok JSON file:</label><br>
+            <input type="file" name="file" id="file" accept=".json" required>
+            <button type="submit">Analyze</button>
+        </form>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="flash-messages">
+            {% for message in messages %}
+            <p class="error">{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% if extracted_data %}
+        <h2>Analysis Results</h2>
+        <p><strong>Total videos watched:</strong> {{ extracted_data.video_count }}</p>
+        {% if extracted_data.most_watched %}
+        <h3>Most Watched Video:</h3>
+        <ul>
+            <li><strong>Video URL:</strong> <a href="{{ extracted_data.most_watched.url }}" target="_blank">Watch it on TikTok</a></li>
+            <li><strong>Times Watched:</strong> {{ extracted_data.most_watched.count }}</li>
+        </ul>
+        {% endif %}
+        <p><strong>Following:</strong> {{ extracted_data.following_count }}</p>
+        <p><strong>Followers:</strong> {{ extracted_data.followers_count }}</p>
+        <p><strong>Liked videos:</strong> {{ extracted_data.liked_videos_count }}</p>
+        {% endif %}
+    </div>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', () => {
+            const button = document.querySelector('button[type="submit"]');
+            button.innerText = 'Analyzing...';
+            button.disabled = true;
+        });
+    </script>
+</body>
+</html>
