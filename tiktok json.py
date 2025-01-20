@@ -18,16 +18,23 @@ def find_key(data, target_key):
                 return result
     return None
 
+def parse_price(price_str):
+    try:
+        return float(price_str.split()[0])
+    except:
+        return 0.0
+
 try:
     with open(file_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
 
     browsing_history = find_key(data, "Video Browsing History")
     video_list = browsing_history.get("VideoList", []) if browsing_history else []
-    print(f"You have watched {len(video_list)} TikToks.")
+    total_videos = len(video_list)
+    print(f"You have watched {total_videos} TikTok video(s).")
 
     if video_list:
-        urls = [video.get("Link") for video in video_list]
+        urls = [video.get("Link") for video in video_list if video.get("Link")]
         url_counts = Counter(urls)
         most_common_url, count = url_counts.most_common(1)[0]
         print(f"You've watched this TikTok {count} time(s): {most_common_url}")
@@ -43,6 +50,31 @@ try:
     like_list = find_key(data, "Like List")
     liked_videos_count = len(like_list.get("ItemFavoriteList", [])) if like_list else 0
     print(f"You have liked {liked_videos_count} TikTok video(s).")
+
+    order_history = find_key(data, "Order History")
+    order_histories = order_history.get("OrderHistories", {}) if order_history else {}
+    total_orders = len(order_histories)
+    total_spent = sum(
+        parse_price(order.get("total_price", "0 USD")) for order in order_histories.values()
+    )
+    print(f"You have made {total_orders} order(s) through TikTok Shop.")
+    print(f"Total amount spent on TikTok Shop: {total_spent:.2f} USD.")
+
+    product_browsing_history = find_key(data, "Product Browsing History")
+    product_browsed = product_browsing_history.get("ProductBrowsingHistories", []) if product_browsing_history else []
+    total_products_browsed = len(product_browsed)
+    print(f"You have browsed {total_products_browsed} product(s).")
+
+    if product_browsed:
+        shop_names = [product.get("shop_name") for product in product_browsed if product.get("shop_name")]
+        shop_counts = Counter(shop_names)
+        most_common_shop, shop_count = shop_counts.most_common(1)[0]
+        print(f"Most visited shop: {most_common_shop} {shop_count} times.")
+
+    favorite_videos = find_key(data, "Favorite Videos")
+    favorite_video_list = favorite_videos.get("FavoriteVideoList", []) if favorite_videos else []
+    total_favorited_videos = len(favorite_video_list)
+    print(f"You have favorited {total_favorited_videos} TikTok videos.")
 
 except FileNotFoundError:
     print(f"The file '{file_path}' was not found. Please check the file path.")
